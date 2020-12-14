@@ -1,11 +1,19 @@
 from datetime import datetime, timedelta
 
-import extraction.extract_main as extract_main
+from extraction import extract_data
 from transform import transform_data
+from load import load_data
+
+from load import load_data
 import sys, os
 import pandas as pd
 
-sys.path.append('../')
+
+
+def activate_account_service():
+    PATH_GOOGLE_APPLICATION_CREDENTIALS='C:/Users/jpcartesf/Documents/trabajo/de_wallmart/Deployment/app/resources/de-wallmart-d751dc34a97b.json'
+    #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=PATH_GOOGLE_APPLICATION_CREDENTIALS#os.getenv('PATH_GOOGLE_APPLICATION_CREDENTIALS')
 
 
 def create_folder (path):
@@ -17,10 +25,26 @@ def create_folder (path):
 
 if __name__ == '__main__':
 #def run(path_gcs_params):
+    activate_account_service()
+
+
+
+    #01 Extraction data from storage
+    path_raw = 'data_raw'
+    create_folder(path_raw)
+    try:
+        extract_data.download_data_csv('data_raw_metacritic_games','result.csv', 'C:/Users/jpcartesf/Documents/trabajo/de_wallmart/Deployment/app/data_raw/result.csv')
+
+        extract_data.download_data_csv('data_raw_metacritic_games','consoles.csv', 'C:/Users/jpcartesf/Documents/trabajo/de_wallmart/Deployment/app/data_raw/consoles.csv')
+    except Exception as e:
+            msg_error = 'Error al descargar los origenes result.csv o consoles.csv => {}'
+            print(msg_error.format(e))
+            exit (0)
+
 
 
     try:
-        df_consoles = pd.read_csv('data/consoles.csv')
+        df_consoles = pd.read_csv('{}/consoles.csv'.format(path_raw))
     except Exception as e:
         msg_error = 'Error leer consoles.csv => {}'
         print(msg_error.format(e))
@@ -28,17 +52,55 @@ if __name__ == '__main__':
 
 
     try:
-        df_result = pd.read_csv('data/result.csv')
+        df_result = pd.read_csv('{}/result.csv'.format(path_raw))
     except Exception as e:
         msg_error = 'Error leer result.csv => {}'
         print(msg_error.format(e))
         exit (0)
 
 
+
     #Creamos la carpeta para la zona DWH
     path_dwh = 'data_dwh'
     create_folder(path_dwh)
-    transform_data.generate_dm_console(df_consoles).to_csv(path_dwh+'/dm_console.csv', index=False)
-    transform_data.generate_dm_game(df_result).to_csv(path_dwh+'/dm_game.csv',index=False)
-    transform_data.generate_dm_company(df_consoles).to_csv(path_dwh+'/dm_company.csv',index=False)
-    transform_data.generate_ft_critics(df_result, df_consoles).to_csv(path_dwh+'/ft_metrics.csv',index=False)
+    try:
+        transform_data.generate_dm_console(df_consoles).to_csv(path_dwh+'/dm_console.csv', index=False)
+        transform_data.generate_dm_game(df_result).to_csv(path_dwh+'/dm_game.csv',index=False)
+        transform_data.generate_dm_company(df_consoles).to_csv(path_dwh+'/dm_company.csv',index=False)
+        transform_data.generate_ft_critics(df_result, df_consoles).to_csv(path_dwh+'/ft_critics.csv',index=False)
+    except Exception as e:
+        msg_error = 'Error en la zona de transformacion dwh => {}'
+        print(msg_error.format(e))
+        exit (0)
+
+    #Load data dwh to storage
+
+    try:
+        data_dwh_metacritic_games = 'data_dwh_metacritic_games'
+        load_data.upload_blob(data_dwh_metacritic_games,'data_dwh','dm_console.csv')
+        load_data.upload_blob(data_dwh_metacritic_games,'data_dwh','dm_game.csv')
+        load_data.upload_blob(data_dwh_metacritic_games,'data_dwh','dm_company.csv')
+        load_data.upload_blob(data_dwh_metacritic_games,'data_dwh','ft_critics.csv')
+    except Exception as e:
+        msg_error = 'Error en subida de archivos dwh a storage=> {}'
+        print(msg_error.format(e))
+        exit (0)
+
+
+    #Load data dwh to BigQuery
+    csv_delimiter = ','
+    dataset_bq_dwh = 'data_dwh_metacritic_games'
+    try:
+        load_data.load_csv_into_bq(data_dwh_metacritic_games, 'dm_console.csv', csv_delimiter, dataset_bq_dwh, 'dm_console')
+        load_data.load_csv_into_bq(data_dwh_metacritic_games, 'dm_game.csv', csv_delimiter, dataset_bq_dwh, 'dm_game')
+        load_data.load_csv_into_bq(data_dwh_metacritic_games, 'dm_company.csv', csv_delimiter, dataset_bq_dwh, 'dm_company')
+        load_data.load_csv_into_bq(data_dwh_metacritic_games, 'ft_critics.csv', csv_delimiter, dataset_bq_dwh, 'ft_critics')
+
+    except Exception as e:
+        msg_error = 'Error en carga de tablas en dataset dwh => {}'
+        print(msg_error.format(e))
+        exit (0)
+
+    #Creamos la carpeta para la zona Analytics
+    path_anaytics = 'data_analytics'
+    create_folder(path_anaytics)
