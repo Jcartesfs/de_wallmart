@@ -1,0 +1,8 @@
+google-cloud-secret-manager==1.0.0
+azure-keyvault-secrets==4.0.0
+azure-identity==1.0.1
+flask==1.1.2
+pycryptodome==3.9.8
+google-cloud-logging==2.0.0
+google-cloud-storage==1.31.0
+google-cloud-bigquery==1.27.2
