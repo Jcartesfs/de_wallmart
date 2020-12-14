@@ -50,7 +50,6 @@ def load_csv_into_bq(bucket_name, filename, csv_delimiter, dataset_bq, table_nam
 def execute_sql_bq(dataset_bq, table_name, query_sql):
     client = bigquery.Client()
     job_config = bigquery.QueryJobConfig(
-                                          destination = table_name,
                                           write_disposition='WRITE_TRUNCATE'
                                         )
     # Set the destination table

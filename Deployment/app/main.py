@@ -10,9 +10,9 @@ import pandas as pd
 
 
 def activate_account_service():
-    PATH_GOOGLE_APPLICATION_CREDENTIALS='C:/Users/jpcartesf/Documents/trabajo/de_wallmart/Deployment/app/resources/de-wallmart-d751dc34a97b.json'
-    #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=PATH_GOOGLE_APPLICATION_CREDENTIALS#os.getenv('PATH_GOOGLE_APPLICATION_CREDENTIALS')
+    #PATH_GOOGLE_APPLICATION_CREDENTIALS='app/resources/de-wallmart-d751dc34a97b.json'
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=PATH_GOOGLE_APPLICATION_CREDENTIALS#os.getenv('PATH_GOOGLE_APPLICATION_CREDENTIALS')
 
 
 def create_folder (path):
@@ -32,9 +32,9 @@ if __name__ == '__main__':
     path_raw = 'data_raw'
     create_folder(path_raw)
     try:
-        extract_data.download_data_csv('data_raw_metacritic_games','result.csv', 'C:/Users/jpcartesf/Documents/trabajo/de_wallmart/Deployment/app/data_raw/result.csv')
+        extract_data.download_data_csv('data_raw_metacritic_games','result.csv', 'data_raw/result.csv')
 
-        extract_data.download_data_csv('data_raw_metacritic_games','consoles.csv', 'C:/Users/jpcartesf/Documents/trabajo/de_wallmart/Deployment/app/data_raw/consoles.csv')
+        extract_data.download_data_csv('data_raw_metacritic_games','consoles.csv', 'data_raw/consoles.csv')
     except Exception as e:
             msg_error = 'Error al descargar los origenes result.csv o consoles.csv => {}'
             print(msg_error.format(e))

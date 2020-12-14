@@ -21,7 +21,7 @@ def generate_dm_console(df):
     return df_aux
 
 def generate_dm_company(df):
-    columns = ['id_console','name','description','process_timestamp','start_timestamp','end_timestamp','creation_source_value','creation_source_desc','update_timestamp']
+    columns = ['id_company','name','description','process_timestamp','start_timestamp','end_timestamp','creation_source_value','creation_source_desc','update_timestamp']
     df = pd.DataFrame(df['company'].unique(),columns=['company'])
     df_aux = pd.DataFrame(columns = columns)
     df_aux['id_company'] = df['company'].apply(hash_md5)
@@ -35,7 +35,7 @@ def generate_dm_company(df):
     return df_aux
 
 def generate_dm_game(df):
-    columns = ['id_console','name','description','process_timestamp','start_timestamp','end_timestamp','creation_source_value','creation_source_desc','update_timestamp']
+    columns = ['id_game','name','description','process_timestamp','start_timestamp','end_timestamp','creation_source_value','creation_source_desc','update_timestamp']
     df = pd.DataFrame(df['name'].unique(),columns=['name'])
     df_aux = pd.DataFrame(columns = columns)
     df_aux['id_game'] = df['name'].apply(hash_md5)
@@ -48,20 +48,6 @@ def generate_dm_game(df):
     df_aux['update_timestamp'] = None
     return df_aux
 
-
-def generate_dm_game(df):
-    columns = ['id_console','name','description','process_timestamp','start_timestamp','end_timestamp','creation_source_value','creation_source_desc','update_timestamp']
-    df = pd.DataFrame(df['name'].unique(),columns=['name'])
-    df_aux = pd.DataFrame(columns = columns)
-    df_aux['id_game'] = df['name'].apply(hash_md5)
-    df_aux['name'] = df['name']
-    df_aux['process_timestmap']  = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%m:%S"))
-    df_aux['start_timestmap'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%m:%S"))
-    df_aux['end_timestamp'] = None
-    df_aux['creation_source_value'] = 'result.csv'
-    df_aux['creation_source_desc'] = 'Archivo CSV'
-    df_aux['update_timestamp'] = None
-    return df_aux
 
 def generate_ft_critics(df, df2):
 

@@ -6,3 +6,4 @@ pycryptodome==3.9.8
 google-cloud-logging==2.0.0
 google-cloud-storage==1.31.0
 google-cloud-bigquery==1.27.2
+pandas
