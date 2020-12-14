@@ -4,7 +4,6 @@ from extraction import extract_data
 from transform import transform_data
 from load import load_data
 
-from load import load_data
 import sys, os
 import pandas as pd
 
@@ -101,6 +100,121 @@ if __name__ == '__main__':
         print(msg_error.format(e))
         exit (0)
 
-    #Creamos la carpeta para la zona Analytics
-    path_anaytics = 'data_analytics'
-    create_folder(path_anaytics)
+    #Se aplican las querys a la zona dwh para entregar los reportes que necesita el area de analytics
+
+    dataset_bq_dwh = 'data_analytics_metacritic_games'
+    sql_bestgames_console_company = '''
+        WITH temp AS (
+        SELECT 
+              com.name AS company
+             ,con.name AS console
+             ,gam.name AS game
+             ,ROW_NUMBER() OVER(PARTITION BY con.name, com.name  ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN -1 ELSE CAST(metascore AS INT64) END desc) as ranking_metascore
+             ,ROW_NUMBER() OVER(PARTITION BY con.name, com.name  ORDER BY  CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN -1 ELSE CAST(userscore AS INT64) END desc) as ranking_userscore
+             ,ROW_NUMBER() OVER(PARTITION BY con.name, com.name 
+                              ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN -1 ELSE CAST(metascore AS INT64) END desc
+                                       ,CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN -1 ELSE CAST(userscore AS INT64) END desc) as rank
+              FROM `de-wallmart.data_dwh_metacritic_games.ft_critics` ft
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_console` con
+                ON ft.id_console = con.id_console
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_company` com
+                ON ft.id_company = com.id_company
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_game` gam
+                ON ft.id_game = gam.id_game  
+        ) SELECT 
+                * EXCEPT(ranking_metascore,ranking_userscore)
+                FROM temp
+                where rank<=10
+    '''
+    load_data.execute_sql_bq(dataset_bq_dwh, 'bestgames_console_company', sql_bestgames_console_company)
+
+
+    sql_bestgames_worst_company = '''
+        WITH temp AS (
+        SELECT 
+              com.name AS company
+             ,con.name AS console
+             ,gam.name AS game
+             ,ft.date  AS date
+             ,current_timestamp() as load_timestmap
+             ,ROW_NUMBER() OVER(PARTITION BY con.name, com.name  ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN 100 ELSE CAST(metascore AS INT64) END asc) as ranking_metascore
+             ,ROW_NUMBER() OVER(PARTITION BY con.name, com.name  ORDER BY  CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN 100 ELSE CAST(userscore AS INT64) END asc) as ranking_userscore
+             ,ROW_NUMBER() OVER(PARTITION BY con.name, com.name 
+                              ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN 100 ELSE CAST(metascore AS INT64) END asc
+                                       ,CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN 100 ELSE CAST(userscore AS INT64) END asc) as rank
+              FROM `de-wallmart.data_dwh_metacritic_games.ft_critics` ft
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_console` con
+                ON ft.id_console = con.id_console
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_company` com
+                ON ft.id_company = com.id_company
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_game` gam
+                ON ft.id_game = gam.id_game  
+        ) SELECT 
+                * EXCEPT(ranking_metascore,ranking_userscore)
+                FROM temp
+                where rank<=10
+    '''
+    load_data.execute_sql_bq(dataset_bq_dwh, 'worstgames_console_company', sql_bestgames_worst_company)
+
+
+
+
+
+    sql_worst_all_consoles = '''
+            WITH temp AS (
+            SELECT 
+                  com.name AS company
+                 ,con.name AS console
+                 ,gam.name AS game
+                 ,ft.date  AS date
+                 ,current_timestamp() as load_timestmap
+                 ,ROW_NUMBER() OVER(PARTITION BY con.name ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN 100 ELSE CAST(metascore AS INT64) END asc) as ranking_metascore
+                 ,ROW_NUMBER() OVER(PARTITION BY con.name ORDER BY  CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN 100 ELSE CAST(userscore AS INT64) END asc) as ranking_userscore
+                 ,ROW_NUMBER() OVER(PARTITION BY con.name 
+                                  ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN 100 ELSE CAST(metascore AS INT64) END asc
+                                           ,CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN 100 ELSE CAST(userscore AS INT64) END asc) as rank
+                  FROM `de-wallmart.data_dwh_metacritic_games.ft_critics` ft
+            INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_console` con
+                    ON ft.id_console = con.id_console
+            INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_company` com
+                    ON ft.id_company = com.id_company
+            INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_game` gam
+                    ON ft.id_game = gam.id_game  
+            ) SELECT 
+                    * EXCEPT(ranking_metascore,ranking_userscore)
+                    FROM temp
+                    where rank<=10
+    '''
+    load_data.execute_sql_bq(dataset_bq_dwh, 'worstgames_all_consoles', sql_worst_all_consoles)
+
+
+    
+
+    sql_best_all_consoles = '''
+        WITH temp AS (
+        SELECT 
+              com.name AS company
+             ,con.name AS console
+             ,gam.name AS game
+             ,ft.date  AS date
+             ,current_timestamp() as load_timestmap
+             ,ROW_NUMBER() OVER(PARTITION BY con.name ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN -1 ELSE CAST(metascore AS INT64) END desc) as ranking_metascore
+             ,ROW_NUMBER() OVER(PARTITION BY con.name ORDER BY  CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN -1 ELSE CAST(userscore AS INT64) END desc) as ranking_userscore
+             ,ROW_NUMBER() OVER(PARTITION BY con.name 
+                              ORDER BY  CASE WHEN SAFE_CAST(metascore AS INT64) IS NULL THEN -1 ELSE CAST(metascore AS INT64) END asc
+                                       ,CASE WHEN SAFE_CAST(userscore AS INT64) IS NULL THEN -1 ELSE CAST(userscore AS INT64) END asc) as rank
+              FROM `de-wallmart.data_dwh_metacritic_games.ft_critics` ft
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_console` con
+                ON ft.id_console = con.id_console
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_company` com
+                ON ft.id_company = com.id_company
+        INNER JOIN `de-wallmart.data_dwh_metacritic_games.dm_game` gam
+                ON ft.id_game = gam.id_game  
+        ) SELECT 
+                * EXCEPT(ranking_metascore,ranking_userscore)
+                FROM temp
+                where rank<=10
+    
+
+    '''
+    load_data.execute_sql_bq(dataset_bq_dwh, 'bestgames_all_consoles', sql_best_all_consoles)
