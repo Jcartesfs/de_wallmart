@@ -65,6 +65,8 @@ Antes de comenzar con la explicación del proceso, se tomaron las siguientes dec
       * Aplicar transformaciones tipo CAST para las zonas dwh y analytics en BQ
       * Creación metadata en las etapas ETL para posterior almacenamiento en servicio loggging y generar alertas con monitoring
       * CD a nivel de devops para el servicio que mantiene el microservicio  (Cloud Run)
+      * Calendarizacion mediante airflow, cloud scheduler, argo u otro, para su ejecución de forma diaria
+      * Migracion del proceso .py a lenguajes .scala o .java
 
 #### 9) Ejecución de proceso
 
