@@ -14,9 +14,7 @@ def func1():
 
 @app.route('/exec', methods=['POST'])
 def route_exec():
-    params_table = request.data.decode('utf-8')
-    print(params_table)
-    main.run(params_table)
+    main.run()
     
 
 if __name__ == "__main__":

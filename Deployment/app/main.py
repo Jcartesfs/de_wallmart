@@ -22,8 +22,8 @@ def create_folder (path):
         os.makedirs(path)   
 
 
-if __name__ == '__main__':
-#def run(path_gcs_params):
+#if __name__ == '__main__':
+def run():
     activate_account_service()
 
 
