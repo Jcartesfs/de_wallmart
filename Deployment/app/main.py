@@ -1,30 +1,21 @@
+from app.extraction import extract_data
+from app.transform import transform_data
+from app.load import load_data
+
+
 from datetime import datetime, timedelta
 
-from extraction import extract_data
-from transform import transform_data
-from load import load_data
-
-import sys, os
+import os
 import pandas as pd
 
 
-
-def activate_account_service():
-    #PATH_GOOGLE_APPLICATION_CREDENTIALS='app/resources/de-wallmart-d751dc34a97b.json'
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    #os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=PATH_GOOGLE_APPLICATION_CREDENTIALS#os.getenv('PATH_GOOGLE_APPLICATION_CREDENTIALS')
-
-
 def create_folder (path):
-    try:
-        os.stat(path)
-    except:
-        os.makedirs(path)   
+    if not os.path.exists(path):
+      os.makedirs(path)
 
 
 #if __name__ == '__main__':
 def run():
-    activate_account_service()
 
 
 

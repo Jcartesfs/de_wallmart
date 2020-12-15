@@ -59,6 +59,8 @@ def generate_ft_critics(df, df2):
     df_aux['userscore'] = df['userscore']
     df_company = pd.merge(df, df2, on=['console', 'console'], how = 'left')
     df_aux['id_company'] = df_company['company'].apply(hash_md5)
+    df_aux['id_critic'] = df['name'] + df['console'] + df_company['company']
+    df_aux['id_critic'] = df_aux['id_critic'].apply(hash_md5)
     df_aux['date'] = df['date'].astype('datetime64[ns]')
     df_aux['process_timestmap']  = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%m:%S"))
     df_aux['start_timestmap'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%m:%S"))

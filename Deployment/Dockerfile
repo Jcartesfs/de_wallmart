@@ -10,7 +10,6 @@ COPY app_flask.py '/home/'
 
 # Variables de entorno
 
-ENV GOOGLE_APPLICATION_CREDENTIALS="/home/app/resources/de-wallmart-d751dc34a97b.json"
 ENV GCP_PROJECT_ID='de-wallmart'
 
 
